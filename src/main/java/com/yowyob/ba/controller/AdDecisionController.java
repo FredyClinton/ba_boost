@@ -2,7 +2,7 @@ package com.yowyob.ba.controller;
 
 import com.yowyob.ba.dto.AdResponse;
 import com.yowyob.ba.dto.UserContext;
-import com.yowyob.ba.service.AdOrchestrator;
+import com.yowyob.ba.service.AdOrchestratorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class AdDecisionController {
 
-    private  final AdOrchestrator   orchestrator;
+    private  final AdOrchestratorService orchestrator;
 
 
     @PostMapping

@@ -25,7 +25,13 @@ services:
     ports:
       - "6379:6379"
 
-  # 3. Ton Application Spring Boot
+  # 3. Service Python
+  ml-engine:
+    build: ./ml-engine
+    container_name: ba_ml_engine
+    ports:
+      - "8001:8000"
+  # 4. Ton Application Spring Boot
   app:
     build: .  # Utilise le Dockerfile actuel
     container_name: ba_app
@@ -39,8 +45,11 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       JAVA_TOOL_OPTIONS: "-Dreactor.netty.http.server.accessLogEnabled=true"
+      ML_ENGINE_URL: http://ml-engine:8000
     depends_on:
       db:
         condition: service_healthy
       redis:
+        condition: service_started
+      ml-engine:
         condition: service_started
