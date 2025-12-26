@@ -1,0 +1,46 @@
+services:
+  # 1. Base de données PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: ba_postgres
+    environment:
+      POSTGRES_USER: ba_user
+      POSTGRES_PASSWORD: ba_password
+      POSTGRES_DB: ba_db
+    ports:
+      - "5432:5432"
+    volumes:
+      # On injecte le script SQL pour qu'il s'exécute au premier démarrage
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ba_user -d ba_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Cache Redis
+  redis:
+    image: redis:alpine
+    container_name: ba_redis
+    ports:
+      - "6379:6379"
+
+  # 3. Ton Application Spring Boot
+  app:
+    build: .  # Utilise le Dockerfile actuel
+    container_name: ba_app
+    ports:
+      - "8080:8080"
+    environment:
+      # On écrase les configs locales pour parler aux conteneurs
+      SPRING_R2DBC_URL: r2dbc:postgresql://db:5432/ba_db
+      SPRING_R2DBC_USERNAME: ba_user
+      SPRING_R2DBC_PASSWORD: ba_password
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      JAVA_TOOL_OPTIONS: "-Dreactor.netty.http.server.accessLogEnabled=true"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
