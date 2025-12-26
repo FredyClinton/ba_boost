@@ -1,6 +1,7 @@
 package com.yowyob.ba.service;
 
 import com.yowyob.ba.entity.Campaign;
+import com.yowyob.ba.enums.InteractionType;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -13,4 +14,5 @@ public interface CampaignService {
     Flux<Campaign> getAllCampaigns();
     Mono<Campaign> updateCampaign(UUID id, Campaign campaignDetails);
     Mono<Void> deleteCampaign(UUID id);
+
 }
