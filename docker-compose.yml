@@ -31,7 +31,17 @@ services:
     container_name: ba_ml_engine
     ports:
       - "8001:8000"
-  # 4. Ton Application Spring Boot
+
+    # ... tes autres services ...
+
+    # Interface web pour gérer la base de données
+  adminer:
+    image: adminer:4
+    container_name: ba_adminer
+    restart: always
+    ports:
+      - "8081:8080"
+  # 5. Ton Application Spring Boot
   app:
     build: .  # Utilise le Dockerfile actuel
     container_name: ba_app

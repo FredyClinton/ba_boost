@@ -101,3 +101,14 @@ VALUES (
            800.00,
            0
        );
+
+
+-- Table pour stocker les logs d'interactions (Click, View, etc.)
+CREATE TABLE IF NOT EXISTS interactions (
+                                            id UUID PRIMARY KEY,
+                                            campaign_id UUID NOT NULL,
+                                            user_id UUID NOT NULL,
+                                            interaction_type VARCHAR(50),
+    timestamp TIMESTAMP,
+    version BIGINT DEFAULT 0 -- Gestion Optimistic Locking pour R2DBC
+    );
