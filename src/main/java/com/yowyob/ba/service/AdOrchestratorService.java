@@ -5,6 +5,8 @@ import com.yowyob.ba.dto.AdResponse;
 import com.yowyob.ba.dto.ScoreAd;
 import com.yowyob.ba.dto.UserContext;
 
+import com.yowyob.ba.entity.Publication;
+import com.yowyob.ba.repository.PublicationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,9 @@ public class AdOrchestratorService {
     private final TargetingService targetingService;
     private final ActivityGuard activityGuard;
     private final PredictiveEngineClient predictiveEngineClient; // Injection du client
+    private final PublicationRepository publicationRepository;
+
+    private static  final  String API_BASE_URL="";
 
     public Mono<AdResponse> selectBestAd(UserContext userContext) {
         return targetingService.findEligibleCampaigns(userContext)
@@ -43,9 +48,48 @@ public class AdOrchestratorService {
                                         .orElseThrow();
                             });
                 })
-                .flatMap(winner ->
+                .flatMap(winner -> // Enregistrer l'impression
                         activityGuard.recordImpression(userContext.getUserId(), winner.getCampaign().getId())
-                                .thenReturn(AdResponse.from(winner))
+                                .then(fetchAdResponseWithDynamicUrl(winner))
                 );
+    }
+
+    //Helper pour construire le reponse complete
+    private Mono<AdResponse> fetchAdResponseWithDynamicUrl(ScoreAd winner) {
+        if(winner.getCampaign().getPublicationId() == null){
+            return  Mono.just(AdResponse.from(winner));
+        }
+
+        return  publicationRepository.findById(winner.getCampaign().getPublicationId())
+                .map(publication -> {
+                    String dynamicUrl = resolveResourceUrl(publication);
+                    return AdResponse.builder()
+                            .campaignId(winner.getCampaign().getId())
+                            .finalScore(winner.getScore())
+                            .contentUrl(dynamicUrl) // On renvoie l'URL de la ressource
+                            .build();
+
+                }).defaultIfEmpty(AdResponse.from(winner));
+    }
+
+    // generaation de l'URI du media
+    private String resolveResourceUrl(Publication publication) {
+        switch (publication.getContentType()) {
+            case STORY:
+                // Renvoie vers le endpoint spécifique des stories
+                return API_BASE_URL + "/stories/" + publication.getId();
+
+            case PROFILE:
+                // Renvoie vers le profil
+                return "/users/" + publication.getId();
+
+            case BUSINESS:
+                return API_BASE_URL + "/publications/" + publication.getId();
+
+
+            default:
+                // Par défaut, on renvoie vers le endpoint générique des publications
+                return API_BASE_URL + "/publications/" + publication.getId();
+        }
     }
 }

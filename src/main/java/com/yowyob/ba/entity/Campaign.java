@@ -47,6 +47,9 @@ public class Campaign {
 
     private String status;
 
+    @Column("publication_id")
+    private UUID publicationId;
+
 
 
     @Version
