@@ -33,7 +33,7 @@ public class ClickStrategy implements InteractionStrategy {
                         log.info("Click facture: -{} sur la campagne {}", cost, campaign.getId());
                         return  true;
                     }else {
-                        log.warn("Budget epuise : {} ", campaign.getId());
+                        log.warn("Action impossible Budget epuise ou campagne inactive  : {} ", campaign.getId());
                         return false;
                     }
                 }

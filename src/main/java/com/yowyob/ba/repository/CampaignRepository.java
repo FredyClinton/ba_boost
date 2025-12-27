@@ -18,7 +18,9 @@ public interface CampaignRepository extends ReactiveCrudRepository<Campaign, UUI
 
     // reduit le budget lorsqu'un fait une impression
     @Modifying
-    @Query("UPDATE campaigns SET budget_remaining = budget_remaining - :cost WHERE id = :id AND budget_remaining >= :cost")
+    @Query("UPDATE campaigns SET budget_remaining = budget_remaining - :cost WHERE id = :id AND budget_remaining >= :cost, " +
+    "status = CASE WHEN (budget_remaining - :cost) < bid_amount THEN 'PAUSED' ELSE status END " +
+    "WHERE id = :id AND budget_remaining >= :cost")
     Mono<Integer> deductBudget(UUID id, Double cost);
 }
 
