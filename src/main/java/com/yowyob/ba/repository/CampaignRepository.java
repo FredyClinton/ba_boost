@@ -13,15 +13,20 @@ import java.util.UUID;
 public interface CampaignRepository extends ReactiveCrudRepository<Campaign, UUID> {
 
     // select campaigns for user
-    @Query("SELECT * FROM campaigns c WHERE (c.city = :city OR c.city IS NULL)  AND (c.status = 'ACTIVE') AND (:age >= c.min_age AND :age <= c.max_age)")
+    @Query("SELECT * FROM campaigns c WHERE (c.city = :city OR c.city IS NULL)  AND (c.status = 'ACTIVE') AND (:age >= c.min_age AND :age <= c.max_age) " +
+    "AND (c.start_date IS NULL OR c.start_date <= NOW()) AND (c.end_date IS NULL OR c.end_date >= NOW()))")
     Flux<Campaign> findEligibleCampaigns(Integer age, String city);
 
     // reduit le budget lorsqu'un fait une impression
     @Modifying
-    @Query("UPDATE campaigns SET budget_remaining = budget_remaining - :cost WHERE id = :id AND budget_remaining >= :cost, " +
+    @Query("UPDATE campaigns SET budget_remaining = budget_remaining - :cost, " +
     "status = CASE WHEN (budget_remaining - :cost) < bid_amount THEN 'PAUSED' ELSE status END " +
     "WHERE id = :id AND budget_remaining >= :cost")
     Mono<Integer> deductBudget(UUID id, Double cost);
+
+    @Modifying
+    @Query("UPDATE campaigns SET status = 'TERMINATED' WHERE status = 'ACTIVE' AND end_date < NOW()")
+    Mono<Integer> terminateExpiredCampaigns();
 }
 
-// AND (c.country = :country OR c.country IS NULL)
+

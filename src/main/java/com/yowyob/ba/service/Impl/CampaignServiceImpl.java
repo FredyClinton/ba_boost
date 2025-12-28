@@ -5,6 +5,7 @@ import com.yowyob.ba.repository.CampaignRepository;
 import com.yowyob.ba.service.CampaignService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -64,5 +65,21 @@ public class CampaignServiceImpl implements CampaignService {
     public Mono<Void> deleteCampaign(UUID id) {
         return campaignRepository.deleteById(id)
                 .doOnSuccess(unused -> log.info("Campagne supprimée : {}", id));
+    }
+
+    @Scheduled(fixedRate = 60000)
+    public  void cleanupCampaigns(){
+        log.debug("Lancement du nettoyage des campagnes...");
+
+        campaignRepository.terminateExpiredCampaigns()
+                .subscribe(
+                        rows -> {
+                            if(rows > 0){
+                                log.info("SCHEDULER : {} campagnes ont ete passe en TERMINATED", rows);
+                            }
+                        }, error -> {
+                            log.error("Erreur lors du nettoyage des campagnes",error);
+                        }
+                );
     }
 }

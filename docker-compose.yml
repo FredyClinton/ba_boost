@@ -32,16 +32,14 @@ services:
     ports:
       - "8001:8000"
 
-    # ... tes autres services ...
-
-    # Interface web pour gérer la base de données
+  # Interface web pour gérer la base de données
   adminer:
     image: adminer:4
     container_name: ba_adminer
     restart: always
     ports:
       - "8081:8080"
-  # 5. Ton Application Spring Boot
+  # 5. Application Spring Boot
   app:
     build: .  # Utilise le Dockerfile actuel
     container_name: ba_app

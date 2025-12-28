@@ -12,6 +12,7 @@ import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -49,6 +50,13 @@ public class Campaign {
 
     @Column("publication_id")
     private UUID publicationId;
+
+    @Column("start_date")
+    private Instant startDate;
+
+    @Column("end_date")
+    private Instant endDate;
+
 
 
 
